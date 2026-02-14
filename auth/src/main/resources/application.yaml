@@ -21,6 +21,7 @@ spring:
               redirect-uris:
                 - "http://127.0.0.1:8080/authorize/oauth2/code/authserver"
                 - "http://localhost:8080/authorize/oauth2/code/authserver"
+                - "https://adoptions-assistant.apps.tas-ndc.kuhn-labs.com/authorize/oauth2/code/authserver"
 
 server:
   port: 9000

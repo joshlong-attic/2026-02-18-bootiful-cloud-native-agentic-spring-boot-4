@@ -1,0 +1,7 @@
+---
+applications:
+- name: adoptions-auth
+  env:
+    JBP_CONFIG_OPEN_JDK_JRE: "{ jre: { version: 25.+ } }"
+  routes:
+  - route: adoptions-auth.apps.tas-ndc.kuhn-labs.com

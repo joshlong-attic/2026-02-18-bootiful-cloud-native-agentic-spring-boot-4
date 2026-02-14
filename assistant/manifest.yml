@@ -1,0 +1,13 @@
+---
+applications:
+- name: adoptions-assistant
+  env:
+    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTHSERVER_ISSUER_URI: "https://adoptions-auth.apps.tas-ndc.kuhn-labs.com"
+    SPRING_AI_MCP_CLIENT_STREAMABLE_HTTP_CONNECTIONS_SCHEDULER_URL: "https://adoptions-assistant.apps.tas-ndc.kuhn-labs.com"
+    JBP_CONFIG_OPEN_JDK_JRE: "{ jre: { version: 25.+ } }"
+  services:
+  - adoptions-chat
+  - adoptions-embeddings
+  - adoptions-pgvector
+  routes:
+  - route: adoptions-assistant.apps.tas-ndc.kuhn-labs.com

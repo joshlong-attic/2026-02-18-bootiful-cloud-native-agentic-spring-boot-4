@@ -1,0 +1,8 @@
+---
+applications:
+- name: adoptions-scheduler
+  env:
+    JBP_CONFIG_OPEN_JDK_JRE: "{ jre: { version: 25.+ } }"
+    SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "https://adoptions-auth.apps.tas-ndc.kuhn-labs.com"
+  routes:
+  - route: adoptions-scheduler.apps.tas-ndc.kuhn-labs.com
