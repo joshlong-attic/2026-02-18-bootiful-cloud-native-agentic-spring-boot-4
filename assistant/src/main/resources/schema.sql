@@ -13,7 +13,6 @@ CREATE TABLE if not exists authorities
     UNIQUE (username, authority)
 );
 
-drop table if exists dog;
 CREATE TABLE if not exists dog
 (
     id          serial primary key NOT NULL,

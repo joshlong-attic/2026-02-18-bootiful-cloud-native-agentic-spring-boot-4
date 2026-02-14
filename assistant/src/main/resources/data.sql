@@ -1,3 +1,4 @@
+delete from dog;
 INSERT INTO dog (id, name, description) VALUES (97, 'Rocky', 'A brown Chihuahua known for being protective.');
 INSERT INTO dog (id, name, description) VALUES (87, 'Bailey', 'A tan Dachshund known for being playful.');
 INSERT INTO dog (id, name, description) VALUES (89, 'Charlie', 'A black Bulldog known for being curious.');
