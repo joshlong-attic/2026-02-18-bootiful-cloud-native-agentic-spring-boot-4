@@ -12,12 +12,14 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.mcp.customizer.McpSyncClientCustomizer;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.repository.ListCrudRepository;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -56,6 +58,33 @@ public class AssistantApplication {
     @Bean
     QuestionAnswerAdvisor questionAnswerAdvisor(VectorStore vectorStore) {
         return QuestionAnswerAdvisor.builder(vectorStore).build();
+    }
+
+    @Bean
+    ApplicationRunner runner(JdbcClient db) {
+        record Table(String tableName, String type, String totalSize, String description) {
+        }
+        return a -> db.sql("""
+                        SELECT
+                            c.relname AS table_name,
+                            CASE c.relkind
+                                WHEN 'r' THEN 'table'
+                                WHEN 'v' THEN 'view'
+                                WHEN 'm' THEN 'materialized view'
+                                WHEN 'S' THEN 'sequence'
+                            END AS type,
+                            pg_size_pretty(pg_total_relation_size(c.oid)) AS total_size,
+                            obj_description(c.oid) AS description
+                        FROM pg_class c
+                        JOIN pg_namespace n ON n.oid = c.relnamespace
+                        WHERE n.nspname = current_schema()
+                          AND c.relkind IN ('r', 'v', 'm', 'S')
+                        ORDER BY c.relname;
+                        """)
+                .query((rs, rowNum) -> new Table(rs.getString("table_name"),
+                        rs.getString("type"), rs.getString("total_size"), rs.getString("description")))
+                .list()
+                .forEach(System.out::println);
     }
 }
 

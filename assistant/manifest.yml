@@ -2,6 +2,8 @@
 applications:
 - name: adoptions-assistant
   env:
+    SPRING_AI_CHAT_MEMORY_REPOSITORY_JDBC_INITIALIZE_SCHEMA: "never"
+    SPRING_AI_VECTORSTORE_PGVECTOR_INITIALIZE_SCHEMA: "false"
     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTHSERVER_ISSUER_URI: "https://adoptions-auth.apps.tas-ndc.kuhn-labs.com"
     SPRING_AI_MCP_CLIENT_STREAMABLE_HTTP_CONNECTIONS_SCHEDULER_URL: "https://adoptions-scheduler.apps.tas-ndc.kuhn-labs.com"
     JBP_CONFIG_OPEN_JDK_JRE: "{ jre: { version: 25.+ } }"
