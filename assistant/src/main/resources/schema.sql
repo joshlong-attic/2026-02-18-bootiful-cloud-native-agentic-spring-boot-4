@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS event_publication
     last_resubmission_date TIMESTAMP WITH TIME ZONE,
     PRIMARY KEY (id)
 );
+--
 
 CREATE TABLE if not exists dog
 (

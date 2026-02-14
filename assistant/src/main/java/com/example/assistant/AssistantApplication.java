@@ -1,5 +1,8 @@
 package com.example.assistant;
 
+import org.postgresql.util.PGobject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springaicommunity.mcp.security.client.sync.AuthenticationMcpTransportContextProvider;
 import org.springaicommunity.mcp.security.client.sync.oauth2.http.client.OAuth2AuthorizationCodeSyncHttpRequestCustomizer;
 import org.springframework.ai.chat.client.ChatClient;
@@ -19,6 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.repository.ListCrudRepository;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -32,6 +36,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @SpringBootApplication
 public class AssistantApplication {
@@ -126,16 +132,25 @@ record Dog(@Id int id, String name, String description) {
 @ResponseBody
 class AssistantController {
 
+    private final Logger log = LoggerFactory.getLogger(getClass());
     private final ChatClient ai;
+    private final JdbcClient db;
 
     AssistantController(
+            JdbcClient db,
             ToolCallbackProvider scheduler,
             DogRepository repository,
             VectorStore vectorStore, QuestionAnswerAdvisor qa,
             PromptChatMemoryAdvisor promptChatMemoryAdvisor,
             ChatClient.Builder ai) {
+        this.db = db;
 
-        if (false) {
+        var vectorCount = this.fetchAllVectors();
+        this.log.info("vector count: {}", vectorCount);
+        for (var vector : vectorCount) {
+            this.log.info("vector row: {}", vector);
+        }
+        if (vectorCount.isEmpty()) {
             repository.findAll().forEach(dog -> {
                 var dogument = new Document(
                         "id: %s, name: %s, description: %s".formatted(dog.id(), dog.name(), dog.description()));
@@ -157,11 +172,23 @@ class AssistantController {
                 .build();
     }
 
+    @GetMapping("/vectors")
+    List<Map<String, Object>> fetchAllVectors() {
+        return db
+                .sql("select * from vector_store")
+                .query((RowMapper<Map<String, Object>>) (rs, _) ->
+                        Map.of("id", rs.getString("id"), "content", rs.getString("content"),
+                                "embedding", ((PGobject) rs.getObject("embedding")),
+                                "metadata", rs.getString("metadata")))
+                .list();
+    }
+
+
     @GetMapping("/ask")
     String ask(@RequestParam String question) {
-        var user = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
+        var user = Objects.requireNonNull(SecurityContextHolder
+                        .getContext()
+                        .getAuthentication())
                 .getName();
         return this.ai
                 .prompt()
@@ -169,10 +196,8 @@ class AssistantController {
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, user))
                 .call()
                 .content();
-        //.entity(DogAdoptionSuggestion.class);
     }
 }
-
 
 record DogAdoptionSuggestion(int dogId, String name) {
 }
