@@ -141,10 +141,10 @@ class Reset implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        for (var sql:  "delete from event_publication,delete from spring_ai_chat_memory,delete from vector_store".split(";"))
-        this.db
-                .sql(sql)
-                .update();
+        for (var sql : " event_publication; spring_ai_chat_memory ".split(";"))
+            this.db
+                    .sql(" delete from " + sql)
+                    .update();
     }
 }
 
