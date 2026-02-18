@@ -15,6 +15,7 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.mcp.customizer.McpSyncClientCustomizer;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -29,6 +30,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -126,6 +128,24 @@ interface DogRepository extends ListCrudRepository<Dog, Integer> {
 
 // look mom, no Lombok!!
 record Dog(@Id int id, String name, String description) {
+}
+
+@Component
+class Reset implements ApplicationRunner {
+
+    private final JdbcClient db;
+
+    Reset(JdbcClient db) {
+        this.db = db;
+    }
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        for (var sql:  "delete from event_publication,delete from spring_ai_chat_memory,delete from vector_store".split(";"))
+        this.db
+                .sql(sql)
+                .update();
+    }
 }
 
 @Controller
